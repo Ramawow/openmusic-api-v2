@@ -24,5 +24,5 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-    pgm.droptTable("collaborations");
+    pgm.dropTable("collaborations");
 };
