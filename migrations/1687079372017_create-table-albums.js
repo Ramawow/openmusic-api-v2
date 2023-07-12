@@ -17,13 +17,14 @@ exports.up = (pgm) => {
             notNull: true,
         },
         created_at: {
-            type: "TEXT",
+            type: 'TEXT',
             notNull: true,
         },
         updated_at: {
-            type: "TEXT",
+            type: 'TEXT',
             notNull: true,
         },
+
     });
 };
 

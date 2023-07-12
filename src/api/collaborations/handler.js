@@ -1,86 +1,52 @@
-const ClientError = require("../../exceptions/ClientError");
-
+const autoBind = require('auto-bind');
 class CollaborationsHandler {
-  constructor(service, playlistsService, validator) {
-    this._service = service;
+  constructor(collaborationsService, playlistsService, validator) {
+    this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
     this._validator = validator;
 
-    this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
-    this.deleteCollaborationHandler = this.deleteCollaborationHandler.bind(this);
+    autoBind(this);
   }
 
   async postCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: credentialId } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+    this._validator.validateCollaborationPayload(request.payload);
 
-      await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
-      const collaborationId = await this._service.addCollaboration(playlistId, userId);
+    const { id: credentialId } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      const response = h.response({
-        status: "success",
-        message: "Successfully to added collaborations",
-        data: {
-          collaborationId,
-        },
-      });
-      response.code(201);
-      return response;
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: "fail",
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._collaborationsService.verifyUser(userId);
 
-      // Server ERROR!
-      const response = h.response({
-        status: "error",
-        message: "Sorry, server failed!",
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
+    const collaborationId = await this._collaborationsService.addCollaboration(
+      playlistId,
+      userId
+    );
+
+    const response = h.response({
+      status: 'success',
+      message: 'Kolaborasi berhasil ditambahkan',
+      data: {
+        collaborationId,
+      },
+    });
+
+    response.code(201);
+    return response;
   }
 
   async deleteCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: credentialId } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+    this._validator.validateCollaborationPayload(request.payload);
 
-      await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
-      await this._service.deleteCollaboration(playlistId, userId);
+    const { id: credentialId } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      return {
-        status: "success",
-        message: "Successfully to deleted collaborations",
-      };
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: "fail",
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._collaborationsService.deleteCollaboration(playlistId, userId);
 
-      // Server ERROR!
-      const response = h.response({
-        status: "error",
-        message: "Sorry, server failed!",
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
+    return {
+      status: 'success',
+      message: 'Kolaborasi berhasil dihapus',
+    };
   }
 }
 

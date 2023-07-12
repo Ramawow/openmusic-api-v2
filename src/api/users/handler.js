@@ -1,4 +1,4 @@
-const ClientError = require("../../exceptions/ClientError");
+const ClientError = require('../../exceptions/ClientError');
 
 class UsersHandler {
   constructor(service, validator) {
@@ -17,8 +17,8 @@ class UsersHandler {
       const userId = await this._service.addUser({ username, password, fullname });
 
       const response = h.response({
-        status: "success",
-        message: "Succesfuly added User",
+        status: 'success',
+        message: 'User berhasil ditambahkan',
         data: {
           userId,
         },
@@ -28,7 +28,7 @@ class UsersHandler {
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: "fail",
+          status: 'fail',
           message: error.message,
         });
         response.code(error.statusCode);
@@ -37,15 +37,14 @@ class UsersHandler {
 
       // Server ERROR!
       const response = h.response({
-        status: "error",
-        message: "Sorry, server failed!",
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
       console.error(error);
       return response;
     }
   }
-
   async getUserByIdHandler(request, h) {
     try {
       const { id } = request.params;
@@ -53,7 +52,7 @@ class UsersHandler {
       const user = await this._service.getUserById(id);
 
       return {
-        status: "success",
+        status: 'success',
         data: {
           user,
         },
@@ -61,17 +60,18 @@ class UsersHandler {
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: "fail",
+          status: 'fail',
           message: error.message,
         });
         response.code(error.statusCode);
         return response;
       }
 
+
       // server ERROR!
       const response = h.response({
-        status: "error",
-        message: "Sorry, server failed!",
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
       console.error(error);

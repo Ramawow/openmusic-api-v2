@@ -1,4 +1,4 @@
-const ClientError = require("../../exceptions/ClientError");
+const ClientError = require('../../exceptions/ClientError');
 
 class AuthenticationsHandler {
   constructor(authenticationsService, usersService, tokenManager, validator) {
@@ -25,8 +25,8 @@ class AuthenticationsHandler {
       await this._authenticationsService.addRefreshToken(refreshToken);
 
       const response = h.response({
-        status: "success",
-        message: "Authentication berhasil ditambahkan",
+        status: 'success',
+        message: 'Authentication berhasil ditambahkan',
         data: {
           accessToken,
           refreshToken,
@@ -37,7 +37,7 @@ class AuthenticationsHandler {
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: "fail",
+          status: 'fail',
           message: error.message,
         });
         response.code(error.statusCode);
@@ -46,8 +46,8 @@ class AuthenticationsHandler {
 
       // Server ERROR!
       const response = h.response({
-        status: "error",
-        message: "Maaf, terjadi kegagalan pada server kami.",
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
       console.error(error);
@@ -65,30 +65,30 @@ class AuthenticationsHandler {
 
       const accessToken = this._tokenManager.generateAccessToken({ id });
       return {
-        status: "success",
-        message: "Access token successfully updated",
+        status: 'success',
+        message: 'Access Token berhasil diperbarui',
         data: {
           accessToken,
         },
       };
     } catch (error) {
       if (error instanceof ClientError) {
-        console.log(error.message);
-        return h
-          .response({
-            status: "fail",
-            message: error.message,
-          })
-          .code(error.statusCode);
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
       }
-      // Server Error
-      console.log(error.message);
-      return h
-        .response({
-          status: "error",
-          message: "Server Error",
-        })
-        .code(500);
+
+      // Server ERROR!
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
     }
   }
 
@@ -101,13 +101,13 @@ class AuthenticationsHandler {
       await this._authenticationsService.deleteRefreshToken(refreshToken);
 
       return {
-        status: "success",
-        message: "Refresh token berhasil dihapus",
+        status: 'success',
+        message: 'Refresh token berhasil dihapus',
       };
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
-          status: "fail",
+          status: 'fail',
           message: error.message,
         });
         response.code(error.statusCode);
@@ -116,8 +116,8 @@ class AuthenticationsHandler {
 
       // Server ERROR!
       const response = h.response({
-        status: "error",
-        message: "Maaf, terjadi kegagalan pada server kami.",
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
       console.error(error);

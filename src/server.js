@@ -6,12 +6,12 @@ const Jwt = require("@hapi/jwt");
 //ALBUM
 const albums = require("./api/albums");
 const AlbumsService = require("./services/postgres/AlbumsService");
-const AlbumsValidator = require("./validator/albums/");
+const AlbumsValidator = require("./validator/albums");
 
 //SONG
 const songs = require("./api/songs");
 const SongsService = require("./services/postgres/SongsService");
-const SongsValidator = require("./validator/songs/");
+const SongsValidator = require("./validator/songs");
 
 //USER
 const users = require("./api/users");
@@ -27,46 +27,49 @@ const AuthenticationsValidator = require("./validator/authentications");
 // playlists
 const playlists = require("./api/playlists");
 const PlaylistsService = require("./services/postgres/PlaylistsService");
-const PlaylistsValidator = require("./validator/playlists");
+const PlaylistValidator = require("./validator/playlists");
 
 // playlist songs
-const playlistsongs = require("./api/playlistsongs");
-const PlaylistsongsService = require("./services/postgres/PlaylistsongsService");
-const PlaylistsongsValidator = require("./validator/playlistsongs");
+// const playlistSongs = require("./api/playlistsongs");
+// const PlaylistSongsService = require("./services/postgres/PlaylistSongsService");
+// const PlaylistsongsValidator = require("./validator/playlistsongs");
 
 // collaborations
 const collaborations = require("./api/collaborations");
 const CollaborationsService = require("./services/postgres/CollaborationsService");
 const CollaborationsValidator = require("./validator/collaborations");
 
+// songs activities
+// const songsActivites = require('./api/songsActivities');
+// const SongsActivitiesService = require('./services/postgres/SongsActivitiesService');
+
+// error handling
+const ClientError = require('./exceptions/ClientError');
+
 const init = async () => {
-  const albumsService = new AlbumsService();
-  const songsService = new SongsService();
-  const usersService = new UsersService();
+  const albumsService = new AlbumsService()
+  const songsService = new SongsService()
+  const usersService = new UsersService()
   const authenticationsService = new AuthenticationsService();
   const collaborationsService = new CollaborationsService();
-  const playlistsService = new PlaylistsService(collaborationsService);
-  const playlistsongsService = new PlaylistsongsService();
+  const playlistsService = new PlaylistsService(CollaborationsService);
 
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
     routes: {
       cors: {
-        origin: ["*"],
+        origin: ['*'],
       },
     },
   });
 
-  // registrasi plugin eksternal
   await server.register([
     {
       plugin: Jwt,
     },
   ]);
-
-  // mendefinisikan strategy autentikasi jwt
-  server.auth.strategy("playlist_jwt", "jwt", {
+  server.auth.strategy('openmusic_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
       aud: false,
@@ -114,30 +117,44 @@ const init = async () => {
       },
     },
     {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistValidator,
+      },
+    },
+    {
       plugin: collaborations,
       options: {
-        service: collaborationsService,
+        collaborationsService,
         playlistsService,
         validator: CollaborationsValidator,
       },
     },
-    {
-      plugin: playlists,
-      options: {
-        playlistsService,
-        usersService,
-        validator: PlaylistsValidator,
-      },
-    },
-    {
-      plugin: playlistsongs,
-      options: {
-        service: playlistsongsService,
-        playlistsService,
-        validator: PlaylistsongsValidator,
-      },
-    },
+
   ]);
+
+
+  server.ext('onPreResponse', (request, h) => {
+    // mendapatkan konteks response dari request
+    const { response } = request;
+
+
+    if (response instanceof ClientError) {
+      // membuat response baru dari response toolkit sesuai kebutuhan error handling
+      const newResponse = h.response({
+        status: 'fail',
+        message: response.message,
+      });
+      newResponse.code(response.statusCode);
+      return newResponse;
+    }
+
+
+    // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)
+    return response.continue || response;
+  });
+  // Dengan begitu, di handler, kamu bisa fokus terhadap logika dalam menangani request, tanpa adanya error handling.
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
