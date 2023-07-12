@@ -149,7 +149,7 @@ const init = async () => {
       newResponse.code(response.statusCode);
       return newResponse;
     }
-
+    console.log(response.message);
 
     // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi)
     return response.continue || response;
