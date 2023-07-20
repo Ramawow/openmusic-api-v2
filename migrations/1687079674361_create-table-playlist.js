@@ -15,14 +15,6 @@ exports.up = (pgm) => {
         owner: {
             type: 'VARCHAR(50)',
         },
-        created_at: {
-            type: 'TEXT',
-            notNull: true,
-        },
-        updated_at: {
-            type: 'TEXT',
-            notNull: true,
-        },
     });
 };
 

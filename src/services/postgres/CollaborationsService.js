@@ -49,6 +49,19 @@ class CollaborationsService {
       throw new InvariantError('Kolaborasi gagal diverifikasi!');
     }
   }
+
+  async verifyUser(userId) {
+    const query = {
+      text: 'SELECT * FROM collaborations WHERE user_id = $1',
+      values: [userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new InvariantError('Kolaborasi user_id gagal diverifikasi!');
+    }
+  }
 }
 
 module.exports = CollaborationsService;

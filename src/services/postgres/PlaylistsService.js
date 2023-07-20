@@ -101,6 +101,22 @@ class PlaylistsService {
     };
   }
 
+  async getPlaylistActivities(playlistId) {
+    const queryactivitiesFiltered = {
+      text: `SELECT * FROM playlist_song_activities WHERE id = $1`,
+      values: [playlistId],
+    };
+
+    const resultactivitiesFiltered = await this._pool.query(queryactivitiesFiltered);
+
+    if (!resultactivitiesFiltered.rows.length) {
+      throw new NotFoundError('Aktivitas lagu tidak ditemukan');
+    }
+    return {
+      activities: resultactivitiesFiltered.rows[0].activities,
+    };
+  }
+
   async deleteSongFromPlaylist(playlistId, songId) {
     const query = {
       text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
